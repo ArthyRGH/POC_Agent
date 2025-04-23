@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+.env
+# Add any other temporary files or directories you want to ignore
