@@ -1,4 +1,5 @@
-pinecone-client
+pinecone
 sentence-transformers
 unstructured
 pypdf
+python-dotenv

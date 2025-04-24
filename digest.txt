@@ -1,0 +1,438 @@
+Directory structure:
+└── POC_Agent/
+    ├── README.md
+    ├── Dockerfile
+    ├── requirements.txt
+    ├── .dockerignore
+    ├── data/
+    │   └── documents/
+    │       └── Hello.txt
+    ├── scripts/
+    │   ├── combined_knowledge_base.py
+    │   ├── generate_embeddings.py
+    │   ├── load_and_chunk.py
+    │   └── query_knowledge_base.py
+    ├── vector_database/
+    │   └── pinecone_utils.py
+    └── .github/
+        └── workflows/
+            └── SuperBase.yml
+
+================================================
+File: README.md
+================================================
+# POC Agent for Knowledge Base Querying
+
+This project demonstrates a Proof of Concept (POC) agent that can query a knowledge base stored in files using vector embeddings and Pinecone.
+
+## Setup
+
+1.  **Clone the repository** (if you're using Git).
+2.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Set up Pinecone:**
+    * Create a free account on [https://www.pinecone.io/](https://www.pinecone.io/).
+    * Obtain your API key and environment from the Pinecone console.
+    * Create a new index named `poc-file-kb` with dimension `384` and metric `Cosine`.
+4.  **Place your knowledge base files** in the `data/documents/` directory.
+
+## Running the Scripts
+
+1.  **Load and chunk data:**
+    ```bash
+    python scripts/load_and_chunk.py data/documents/
+    ```
+    *(Replace `data/documents/` with the actual path if needed)*
+
+2.  **Generate embeddings and load into Pinecone:**
+    * Set your Pinecone API key and environment as environment variables (recommended) or directly in the `scripts/generate_embeddings.py` file (for POC only, **not recommended for production**).
+    ```bash
+    # Example setting environment variables (replace with your actual values)
+    export PINECONE_API_KEY="YOUR_PINECONE_API_KEY"
+    export PINECONE_ENVIRONMENT="YOUR_PINECONE_ENVIRONMENT"
+    python scripts/generate_embeddings.py
+    ```
+
+3.  **Query the knowledge base:**
+    * Similarly, set your Pinecone API key and environment variables.
+    ```bash
+    export PINECONE_API_KEY="YOUR_PINECONE_API_KEY"
+    export PINECONE_ENVIRONMENT="YOUR_PINECONE_ENVIRONMENT"
+    python scripts/query_knowledge_base.py "Your search query here"
+    ```
+    *(Replace `"Your search query here"` with your actual query)*
+
+## Next Steps (Beyond POC)
+
+* Implement more sophisticated NLU using LLMs.
+* Improve the agent's core logic and decision-making.
+* Build a user interface or API for easier interaction.
+* Implement more robust state management.
+* Consider more scalable deployment options.
+
+
+
+================================================
+File: Dockerfile
+================================================
+FROM python:3.9-slim-buster
+
+WORKDIR /app
+
+# Copy requirements and install dependencies (if you have a requirements.txt)
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Copy the entire project directory (including .git if not ignored)
+COPY . .
+
+# Set the working directory for running your application
+WORKDIR /app/<your_project_subdirectory> # If your main code is in a subfolder
+
+# Define the command to run your application
+CMD ["python", "main.py"] # Replace with your application's entry point
+
+
+
+================================================
+File: requirements.txt
+================================================
+pinecone
+sentence-transformers
+unstructured
+pypdf
+python-dotenv
+
+
+
+================================================
+File: .dockerignore
+================================================
+.git
+__pycache__
+venv
+node_modules
+.env
+
+
+
+================================================
+File: data/documents/Hello.txt
+================================================
+Hello
+
+
+
+================================================
+File: scripts/combined_knowledge_base.py
+================================================
+import os
+from unstructured.partition.auto import partition
+from sentence_transformers import SentenceTransformer
+import pinecone
+import sys
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def load_and_chunk_documents(directory):
+    chunks = []
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            try:
+                elements = partition(filename=filepath)
+                for element in elements:
+                    if str(element).strip():
+                        chunks.append(str(element))
+                print(f"Processed: {filename} - Found {len(elements)} chunks.")
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
+    return chunks
+
+def generate_and_upsert_embeddings(data_chunks):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    embeddings = model.encode(data_chunks)
+    print(f"Generated {len(embeddings)} embeddings of dimension {embeddings[0].shape[0]}")
+
+    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+
+    if not pinecone_api_key:
+        print("Error: Please set the PINECONE_API_KEY environment variable.")
+        sys.exit(1)
+
+    pc = pinecone.Pinecone(api_key=pinecone_api_key)
+    index_name = "poc-file-kb"
+
+    try:
+        index = pc.Index(index_name)
+        for i, (text, embedding) in enumerate(zip(data_chunks, embeddings)):
+            index.upsert([
+                (f"chunk-{i}", embedding.tolist(), {"text": text})
+            ])
+        print(f"Successfully loaded {index.describe_index_stats()['total_vector_count']} vectors into Pinecone.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+def query_pinecone(query):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    query_embedding = model.encode([query])[0].tolist()
+
+    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+
+    if not pinecone_api_key:
+        print("Error: Please set the PINECONE_API_KEY environment variable.")
+        sys.exit(1)
+
+    pc = pinecone.Pinecone(api_key=pinecone_api_key)
+    index_name = "poc-file-kb"
+
+    try:
+        index = pc.Index(index_name)
+        results = index.query(
+            vector=query_embedding,
+            top_k=2,
+            include_metadata=True
+        )
+
+        print(f"\nQuery: {query}")
+        for match in results['matches']:
+            print(f"  Score: {match['score']:.4f}")
+            print(f"  Text: {match['metadata']['text']}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python combined_knowledge_base.py <data_directory> \"your search query\"")
+        sys.exit(1)
+
+    documents_directory = sys.argv[1]
+    user_query = sys.argv[2]
+
+    data_chunks = load_and_chunk_documents(documents_directory)
+    print(f"Total number of data chunks: {len(data_chunks)}")
+    generate_and_upsert_embeddings(data_chunks)
+    query_pinecone(user_query)
+
+
+================================================
+File: scripts/generate_embeddings.py
+================================================
+from sentence_transformers import SentenceTransformer
+import pinecone
+import os
+import sys
+from dotenv import load_dotenv
+load_dotenv()
+
+
+def generate_and_upsert_embeddings(data_chunks):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    embeddings = model.encode(data_chunks)
+    print(f"Generated {len(embeddings)} embeddings of dimension {embeddings[0].shape[0]}")
+
+    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+    pinecone_environment = os.environ.get("PINECONE_ENVIRONMENT")
+
+    if not pinecone_api_key or not pinecone_environment:
+        print("Error: Please set the PINECONE_API_KEY and PINECONE_ENVIRONMENT environment variables.")
+        sys.exit(1)
+
+    pinecone.init(api_key=pinecone_api_key, environment=pinecone_environment)
+    index_name = "poc-file-kb"
+
+    try:
+        index = pinecone.Index(index_name)
+        for i, (text, embedding) in enumerate(zip(data_chunks, embeddings)):
+            index.upsert([
+                (f"chunk-{i}", embedding.tolist(), {"text": text})
+            ])
+        print(f"Successfully loaded {index.describe_index_stats()['total_vector_count']} vectors into Pinecone.")
+    except pinecone.exceptions.IndexNotFoundError:
+        print(f"Error: Index '{index_name}' not found. Please create it in your Pinecone dashboard.")
+    finally:
+        pinecone.deinit()
+
+if __name__ == "__main__":
+    # For simplicity in the POC, we'll assume the chunks are passed directly
+    # or were saved to a temporary file.
+    # If you saved to a file in load_and_chunk.py, you would load them here.
+    # Example of loading from a temporary file:
+    # with open("temp_chunks.txt", "r") as f:
+    #     data_chunks = [line.strip() for line in f]
+
+    # For this POC flow, we'll run load_and_chunk.py first and then manually
+    # copy the printed chunks or modify this script to directly import.
+    # A more robust solution would involve inter-process communication or saving to a file.
+    print("Please run 'python scripts/load_and_chunk.py <data_directory>' first to get the data chunks.")
+    print("Then, paste the list of chunks here (or modify this script to load them):")
+    # This is a very basic way to get input for the POC.
+    # In a real application, you'd manage the data flow more robustly.
+    data_chunks_input = input()
+    # Basic attempt to parse the input as a Python list (very error-prone for real data)
+    try:
+        data_chunks = eval(data_chunks_input)
+        if isinstance(data_chunks, list):
+            generate_and_upsert_embeddings(data_chunks)
+        else:
+            print("Error: Invalid input format for data chunks.")
+    except:
+        print("Error: Could not parse the input as a list of chunks.")
+
+
+
+================================================
+File: scripts/load_and_chunk.py
+================================================
+import os
+from unstructured.partition.auto import partition
+import sys
+from dotenv import load_dotenv
+load_dotenv()
+
+
+def load_and_chunk_documents(directory):
+    chunks = []
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            try:
+                elements = partition(filename=filepath)
+                for element in elements:
+                    if str(element).strip():
+                        chunks.append(str(element))
+                print(f"Processed: {filename} - Found {len(elements)} chunks.")
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
+    return chunks
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python load_and_chunk.py <directory_path>")
+        sys.exit(1)
+
+    documents_directory = sys.argv[1]
+    data_chunks = load_and_chunk_documents(documents_directory)
+    print(f"Total number of data chunks: {len(data_chunks)}")
+
+    # You might want to save these chunks to a temporary file for the next step
+    # For simplicity in the POC, we'll just pass them in memory in the next script.
+    # If you have a very large dataset, consider saving to disk.
+    # Example of saving to a temporary file:
+    # with open("temp_chunks.txt", "w") as f:
+    #     for chunk in data_chunks:
+    #         f.write(chunk + "\n")
+
+
+
+================================================
+File: scripts/query_knowledge_base.py
+================================================
+from sentence_transformers import SentenceTransformer
+import pinecone
+import os
+import sys
+from dotenv import load_dotenv
+load_dotenv()
+
+
+def query_pinecone(query):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    query_embedding = model.encode([query])[0].tolist()
+
+    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+    pinecone_environment = os.environ.get("PINECONE_ENVIRONMENT")
+
+    if not pinecone_api_key or not pinecone_environment:
+        print("Error: Please set the PINECONE_API_KEY and PINECONE_ENVIRONMENT environment variables.")
+        sys.exit(1)
+
+    pinecone.init(api_key=pinecone_api_key, environment=pinecone_environment)
+    index_name = "poc-file-kb"
+
+    try:
+        index = pinecone.Index(index_name)
+        results = index.query(
+            vector=query_embedding,
+            top_k=2,
+            include_metadata=True
+        )
+
+        print(f"\nQuery: {query}")
+        for match in results['matches']:
+            print(f"  Score: {match['score']:.4f}")
+            print(f"  Text: {match['metadata']['text']}")
+    except pinecone.exceptions.IndexNotFoundError:
+        print(f"Error: Index '{index_name}' not found. Please create it in your Pinecone dashboard.")
+    finally:
+        pinecone.deinit()
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python query_knowledge_base.py \"your search query\"")
+        sys.exit(1)
+
+    user_query = sys.argv[1]
+    query_pinecone(user_query)
+
+
+
+================================================
+File: vector_database/pinecone_utils.py
+================================================
+import pinecone
+import os
+import sys
+
+def initialize_pinecone():
+    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
+    pinecone_environment = os.environ.get("PINECONE_ENVIRONMENT")
+
+    if not pinecone_api_key or not pinecone_environment:
+        print("Error: Please set the PINECONE_API_KEY and PINECONE_ENVIRONMENT environment variables.")
+        sys.exit(1)
+
+    pinecone.init(api_key=pinecone_api_key, environment=pinecone_environment)
+
+def get_pinecone_index(index_name="poc-file-kb"):
+    try:
+        index = pinecone.Index(index_name)
+        return index
+    except pinecone.exceptions.IndexNotFoundError:
+        print(f"Error: Index '{index_name}' not found. Please create it in your Pinecone dashboard.")
+        sys.exit(1)
+
+def deinitialize_pinecone():
+    pinecone.deinit()
+
+# You can move the upsert and query logic here for a more modular design
+# For this simple POC, keeping it in the main scripts might be sufficient.
+
+
+
+================================================
+File: .github/workflows/SuperBase.yml
+================================================
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+
