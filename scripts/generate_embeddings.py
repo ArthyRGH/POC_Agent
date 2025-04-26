@@ -1,57 +1,40 @@
-from sentence_transformers import SentenceTransformer
-import pinecone
+from dotenv import load_dotenv
 import os
+from sentence_transformers import SentenceTransformer
+from pinecone import Pinecone
 import sys
 
-def generate_and_upsert_embeddings(data_chunks):
+load_dotenv()  # Load environment variables from .env
+
+def generate_and_upsert_embeddings(data_chunks, batch_size=100):
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    embeddings = model.encode(data_chunks)
-    print(f"Generated {len(embeddings)} embeddings of dimension {embeddings[0].shape[0]}")
+    pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
-    pinecone_environment = os.environ.get("PINECONE_ENVIRONMENT")
-
-    if not pinecone_api_key or not pinecone_environment:
-        print("Error: Please set the PINECONE_API_KEY and PINECONE_ENVIRONMENT environment variables.")
+    if not pinecone_api_key:
+        print("Error: Please check your .env file for PINECONE_API_KEY.")
         sys.exit(1)
 
-    pinecone.init(api_key=pinecone_api_key, environment=pinecone_environment)
+    pc = Pinecone(api_key=pinecone_api_key)
     index_name = "poc-file-kb"
 
     try:
-        index = pinecone.Index(index_name)
-        for i, (text, embedding) in enumerate(zip(data_chunks, embeddings)):
-            index.upsert([
-                (f"chunk-{i}", embedding.tolist(), {"text": text})
-            ])
+        index = pc.Index(index_name)
+        for i in range(0, len(data_chunks), batch_size):
+            batch = data_chunks[i:i+batch_size]
+            embeddings = model.encode(batch)
+            for j, embedding in enumerate(embeddings):
+                index.upsert([
+                    (f"chunk-{i+j}", embedding.tolist(), {"text": batch[j]})
+                ])
+            print(f"Processed batch {i//batch_size + 1}/{(len(data_chunks)+batch_size-1)//batch_size}")
         print(f"Successfully loaded {index.describe_index_stats()['total_vector_count']} vectors into Pinecone.")
-    except pinecone.exceptions.IndexNotFoundError:
-        print(f"Error: Index '{index_name}' not found. Please create it in your Pinecone dashboard.")
+    except Exception as e:
+        print(f"Error: {e}")
     finally:
-        pinecone.deinit()
+        # No deinit needed for the new Pinecone API
+        pass
 
 if __name__ == "__main__":
-    # For simplicity in the POC, we'll assume the chunks are passed directly
-    # or were saved to a temporary file.
-    # If you saved to a file in load_and_chunk.py, you would load them here.
-    # Example of loading from a temporary file:
-    # with open("temp_chunks.txt", "r") as f:
-    #     data_chunks = [line.strip() for line in f]
-
-    # For this POC flow, we'll run load_and_chunk.py first and then manually
-    # copy the printed chunks or modify this script to directly import.
-    # A more robust solution would involve inter-process communication or saving to a file.
-    print("Please run 'python scripts/load_and_chunk.py <data_directory>' first to get the data chunks.")
-    print("Then, paste the list of chunks here (or modify this script to load them):")
-    # This is a very basic way to get input for the POC.
-    # In a real application, you'd manage the data flow more robustly.
-    data_chunks_input = input()
-    # Basic attempt to parse the input as a Python list (very error-prone for real data)
-    try:
-        data_chunks = eval(data_chunks_input)
-        if isinstance(data_chunks, list):
-            generate_and_upsert_embeddings(data_chunks)
-        else:
-            print("Error: Invalid input format for data chunks.")
-    except:
-        print("Error: Could not parse the input as a list of chunks.")
+    with open("temp_chunks.txt", "r", encoding='utf-8') as f:
+        data_chunks = [line.strip() for line in f]
+    generate_and_upsert_embeddings(data_chunks)

@@ -1,17 +1,20 @@
+from dotenv import load_dotenv
+import os
 from sentence_transformers import SentenceTransformer
 import pinecone
-import os
 import sys
+
+load_dotenv()  # Load environment variables from .env
 
 def query_pinecone(query):
     model = SentenceTransformer('all-MiniLM-L6-v2')
     query_embedding = model.encode([query])[0].tolist()
 
-    pinecone_api_key = os.environ.get("PINECONE_API_KEY")
-    pinecone_environment = os.environ.get("PINECONE_ENVIRONMENT")
+    pinecone_api_key = os.getenv("PINECONE_API_KEY")
+    pinecone_environment = os.getenv("PINECONE_ENVIRONMENT")
 
     if not pinecone_api_key or not pinecone_environment:
-        print("Error: Please set the PINECONE_API_KEY and PINECONE_ENVIRONMENT environment variables.")
+        print("Error: Please check your .env file for PINECONE_API_KEY and PINECONE_ENVIRONMENT.")
         sys.exit(1)
 
     pinecone.init(api_key=pinecone_api_key, environment=pinecone_environment)
