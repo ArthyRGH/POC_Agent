@@ -58,7 +58,8 @@ def generate_and_upsert_embeddings(data_chunks, batch_size=20, workers=1, use_pa
         print(f"Processing {len(data_chunks)} chunks with batch size {batch_size} (sequential processing)")
 
     # Load the model
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    # model = SentenceTransformer('all-MiniLM-L6-v2')
+    model = SentenceTransformer('all-mpnet-base-v2')  # 768 dimensions
     pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
     if not pinecone_api_key:
