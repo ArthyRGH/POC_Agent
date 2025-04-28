@@ -20,8 +20,9 @@ def query_pinecone(query, top_k=5, threshold=0.0):
     print(f"\nQuerying knowledge base with: '{query}'")
 
     # Load the model
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-
+    # model = SentenceTransformer('all-MiniLM-L6-v2')
+    model = SentenceTransformer('all-mpnet-base-v2')  # 768 dimensions
+    
     # Convert query to embedding
     query_embedding = model.encode([query])[0].tolist()
 
