@@ -1,5 +1,9 @@
 pinecone
 sentence-transformers
 unstructured
-pypdf
 python-dotenv
+tqdm
+pypdf
+python-docx
+pdf2image
+pytesseract
