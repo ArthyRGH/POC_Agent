@@ -1,0 +1,47 @@
+name: Process Documents
+
+on:
+  push:
+    paths:
+      - 'data/documents/**'
+      - 'scripts/load_and_chunk.py'
+      - 'scripts/generate_embeddings.py'
+
+jobs:
+  process-documents:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install watchdog pypdf python-docx openpyxl python-pptx python-rtf
+        
+    - name: Create test documents directory
+      run: |
+        mkdir -p data/documents
+        
+    - name: Run document processor
+      env:
+        PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+        PINECONE_ENVIRONMENT: ${{ secrets.PINECONE_ENVIRONMENT }}
+      run: |
+        python scripts/load_and_chunk.py data/documents/
+        
+    - name: Check if chunks were generated
+      run: |
+        if [ -f "temp_chunks.txt" ]; then
+          echo "Chunks were successfully generated"
+          cat temp_chunks.txt
+        else
+          echo "No chunks were generated"
+          exit 1
+        fi 

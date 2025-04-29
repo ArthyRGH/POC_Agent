@@ -1,0 +1,65 @@
+.integration-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: none;
+}
+
+.integration-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.integration-platform {
+  display: flex;
+  align-items: center;
+}
+
+.platform-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  background-color: transparent;
+  padding: 0;
+}
+
+.platform-name {
+  font-weight: 500;
+  font-size: 16px;
+  color: #2d3748;
+}
+
+.integration-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-indicator {
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.status-indicator.connected {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: #48bb78;
+}
+
+.status-indicator.disconnected {
+  background-color: rgba(160, 174, 192, 0.1);
+  color: #a0aec0;
+}
+
+.integrations-list {
+  display: flex;
+  flex-direction: column;
+} 

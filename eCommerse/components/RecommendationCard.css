@@ -1,0 +1,111 @@
+.recommendation-card {
+  display: flex;
+  background-color: #f8f9ff;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.recommendation-left-border {
+  width: 6px;
+  background-color: #5344c4;
+}
+
+.recommendation-content {
+  flex: 1;
+  padding: 16px 20px;
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.recommendation-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.impact-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.impact-badge.high {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+.impact-badge.medium {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.impact-badge.low {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.recommendation-description {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 15px 0;
+  line-height: 1.5;
+}
+
+.recommendation-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.agent-info {
+  display: flex;
+  align-items: center;
+}
+
+.agent-info span {
+  font-size: 13px;
+  color: #666;
+}
+
+.agent-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.apply-button {
+  background-color: #5344c4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.apply-button:hover {
+  background-color: #4334a4;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+} 

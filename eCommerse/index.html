@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-chart-line"></i>
+          <span class="logo-text">AnalyticsHub</span>
+        </div>
+        <button class="menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="active">
+            <a href="#">
+              <i class="fas fa-home"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-chart-pie"></i>
+              <span>Analytics</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-users"></i>
+              <span>Customers</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-plug"></i>
+              <span>Integrations</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-question-circle"></i>
+              <span>Help</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="dashboard-header">
+        <div class="mobile-header">
+          <button class="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <span>AnalyticsHub</span>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <div class="search-container">
+            <input type="text" placeholder="Search...">
+            <button class="search-btn">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+          
+          <div class="header-actions">
+            <div class="notification-icon">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge">3</span>
+            </div>
+            
+            <div class="user-profile">
+              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile">
+              <span>John Doe</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <div class="dashboard-content">
+        <section class="welcome-section">
+          <h1>Welcome back, John!</h1>
+          <p>Here's what's happening with your business today.</p>
+        </section>
+        
+        <section class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-icon bg-primary">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-details">
+              <h3>Total Users</h3>
+              <p class="stat-value">2,845</p>
+              <p class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> 12.5%
+              </p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon bg-success">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-details">
+              <h3>Total Sales</h3>
+              <p class="stat-value">$48,574</p>
+              <p class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> 8.2%
+              </p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon bg-warning">
+              <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-details">
+              <h3>Page Views</h3>
+              <p class="stat-value">147,325</p>
+              <p class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> 23.8%
+              </p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon bg-danger">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div class="stat-details">
+              <h3>Conversion</h3>
+              <p class="stat-value">3.24%</p>
+              <p class="stat-change negative">
+                <i class="fas fa-arrow-down"></i> 1.2%
+              </p>
+            </div>
+          </div>
+        </section>
+        
+        <section class="chart-section">
+          <div class="section-header">
+            <h2>Revenue Overview</h2>
+            <div class="time-filters">
+              <button class="time-filter" data-period="week">Week</button>
+              <button class="time-filter active" data-period="month">Month</button>
+              <button class="time-filter" data-period="quarter">Quarter</button>
+              <button class="time-filter" data-period="year">Year</button>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <div class="chart-content">
+              <div class="chart-bars">
+                <!-- Chart bars will be added by JavaScript -->
+              </div>
+            </div>
+            
+            <div class="chart-summary">
+              <div class="summary-item">
+                <h4>Total Revenue</h4>
+                <p class="summary-value" data-summary="total">$245,500</p>
+              </div>
+              <div class="summary-item">
+                <h4>Average</h4>
+                <p class="summary-value" data-summary="average">$40,916</p>
+              </div>
+              <div class="summary-item">
+                <h4>Peak Revenue</h4>
+                <p class="summary-value" data-summary="peak">$58,200</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <div class="dashboard-grid">
+          <section class="recommendations-section">
+            <div class="section-header">
+              <h2>Recommendations</h2>
+              <a href="#" class="view-all">View All</a>
+            </div>
+            
+            <div class="recommendations-list">
+              <div class="recommendation-card">
+                <div class="recommendation-icon bg-primary">
+                  <i class="fas fa-ad"></i>
+                </div>
+                <div class="recommendation-content">
+                  <h3 class="recommendation-title">Increase ad budget for search campaigns</h3>
+                  <p class="recommendation-description">Your search campaigns are performing 37% better than display. Consider reallocating budget from display to search campaigns to maximize ROI.</p>
+                  <button class="apply-button">Apply</button>
+                </div>
+              </div>
+              
+              <div class="recommendation-card">
+                <div class="recommendation-icon bg-success">
+                  <i class="fas fa-tags"></i>
+                </div>
+                <div class="recommendation-content">
+                  <h3 class="recommendation-title">Optimize product pricing</h3>
+                  <p class="recommendation-description">Your premium tier products have a higher conversion rate. Consider adjusting pricing for mid-tier products to increase overall revenue.</p>
+                  <button class="apply-button">Apply</button>
+                </div>
+              </div>
+              
+              <div class="recommendation-card">
+                <div class="recommendation-icon bg-warning">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="recommendation-content">
+                  <h3 class="recommendation-title">Schedule social posts during peak hours</h3>
+                  <p class="recommendation-description">Your audience is most active between 7-9pm. Schedule your posts during these times to increase engagement by up to 24%.</p>
+                  <button class="apply-button">Apply</button>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          <section class="integrations-section">
+            <div class="section-header">
+              <h2>Integrations</h2>
+              <a href="#" class="view-all">View All</a>
+            </div>
+            
+            <div class="integrations-list">
+              <div class="integration-card">
+                <div class="integration-logo">
+                  <i class="fab fa-google"></i>
+                </div>
+                <div class="integration-details">
+                  <h3>Google Analytics</h3>
+                  <span class="integration-status status-connected">Connected</span>
+                </div>
+                <div class="integration-actions">
+                  <button class="connect-button" style="display: none;">Connect</button>
+                  <button class="disconnect-button">Disconnect</button>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-logo">
+                  <i class="fab fa-facebook"></i>
+                </div>
+                <div class="integration-details">
+                  <h3>Facebook Ads</h3>
+                  <span class="integration-status status-connected">Connected</span>
+                </div>
+                <div class="integration-actions">
+                  <button class="connect-button" style="display: none;">Connect</button>
+                  <button class="disconnect-button">Disconnect</button>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-logo">
+                  <i class="fab fa-mailchimp"></i>
+                </div>
+                <div class="integration-details">
+                  <h3>Mailchimp</h3>
+                  <span class="integration-status status-disconnected">Disconnected</span>
+                </div>
+                <div class="integration-actions">
+                  <button class="connect-button">Connect</button>
+                  <button class="disconnect-button" style="display: none;">Disconnect</button>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-logo">
+                  <i class="fab fa-slack"></i>
+                </div>
+                <div class="integration-details">
+                  <h3>Slack</h3>
+                  <span class="integration-status status-disconnected">Disconnected</span>
+                </div>
+                <div class="integration-actions">
+                  <button class="connect-button">Connect</button>
+                  <button class="disconnect-button" style="display: none;">Disconnect</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+      
+      <footer class="dashboard-footer">
+        <p>&copy; 2023 AnalyticsHub. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Contact Support</a>
+        </div>
+      </footer>
+    </main>
+  </div>
+  
+  <script src="script.js"></script>
+  <script type="module" src="test-supabase.js"></script>
+</body>
+</html> 
